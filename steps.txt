@@ -1,0 +1,44 @@
+ - To define several classes that modify the quality and sell_in properties of items. 
+ - Each class should inherit from the UpdateItem class, which has various methods to increase or decrease the quality or sell_in values of the item
+
+To define a class called GildedRose and a class called Item. 
+The GildedRose class has a method called update_quality which updates the quality and sell_in values of the items in its items list according to a set of rules.
+
+Conditions:
+ - "Aged Brie" actually increases in quality the older it gets - done in class AgedBrieItem(UpdateItem):
+    def update_quality(self):
+ - "Backstage passes", like aged brie, increases in quality as its sell-in value approaches; quality increases by 2 when there 
+are 10 days or less and by 3 when there are 5 days or less but quality drops to 0 after the concert - done - class BackStageItem(UpdateItem):
+ - "Sulfuras", being a legendary item, never has to be sold or decreases in quality - done
+ - "Conjured" items degrade in quality twice as fast as normal items - done
+ - The quality of an item is never more than 50 - DONE
+
+
+Alternatives or improvements:
+The items mapping in the ItemMapping class could be moved to a separate configuration file to make it easier to modify and add new items in the future.
+The ItemMapping.create method could be optimized to reduce the number of dictionary lookups and improve performance.
+How it can be achieved:
+to create a cache of the item class instances so that the class doesn't need to look up the class for each item in the items list.
+This could be done by adding a new class-level dictionary to ItemMapping that caches the item class instances. When a new item is created, 
+the class checks the cache to see if the item class instance is already available. 
+If the instance is found in the cache, it is returned. If it is not found, the class creates a new instance, adds it to the cache, and returns it.
+class ItemMapping(object):
+    items = {
+        "Aged Brie": AgedBrieItem,
+        "Sulfuras, Hand of Ragnaros": SulfurasItem,
+        "Backstage passes to a TAFKAL80ETC concert": BackStageItem,
+        "Conjured": ConjuredItem
+    }
+    item_cache = {}
+
+    @classmethod
+    def create(cls, item):
+        if item.name in cls.item_cache:
+            item_class = cls.item_cache[item.name]
+        elif item.name in cls.items:
+            item_class = cls.items[item.name]
+            cls.item_cache[item.name] = item_class
+        else:
+            item_class = UpdateItem
+
+        return item_class(item)
